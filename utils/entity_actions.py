@@ -208,7 +208,12 @@ def entity_creation_flow(main_win, logical_image_path, physical_image_path, desc
 # 6. 관계선 생성 및 속성 입력
 # ===============================================================
 
-def create_relationship_between_entities(main_win):
+def create_relationship_between_entities(main_win, logical_image_path=None,
+                                         physical_image_path=None, description_image_path=None):
+    logical_image_path = logical_image_path or os.path.join(ASSET_DIR, "logical_label.png")
+    physical_image_path = physical_image_path or os.path.join(ASSET_DIR, "physical_label.png")
+    description_image_path = description_image_path or os.path.join(ASSET_DIR, "description_label.png")
+
     canvas = find_canvas(main_win)
     existing_coords = (200, 200)
     new_coords = (450, 200)
@@ -226,9 +231,9 @@ def create_relationship_between_entities(main_win):
 
     open_relationship_panel(main_win, canvas)
 
-    assert fill_field(os.path.join(ASSET_DIR, "logical_label.png"), "REL_LOGICAL"), "Field input failed: label image not found"
-    assert fill_field(os.path.join(ASSET_DIR, "physical_label.png"), "REL_PHYSICAL"), "Field input failed: label image not found"
-    assert fill_field(os.path.join(ASSET_DIR, "description_label.png"), "Temporary relationship for automated testing."), "Field input failed: label image not found"
+    assert fill_field(logical_image_path, "REL_LOGICAL"), "Field input failed: label image not found"
+    assert fill_field(physical_image_path, "REL_PHYSICAL"), "Field input failed: label image not found"
+    assert fill_field(description_image_path, "Temporary relationship for automated testing."), "Field input failed: label image not found"
     print("Relationship input completed.")
 
 
