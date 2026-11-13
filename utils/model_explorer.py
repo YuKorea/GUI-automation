@@ -18,30 +18,53 @@ GROUP_LABELS = ("엔터티", "관계", "기타")
 EXPAND_COLLAPSED = 0
 
 
-def _tree(main_win):
-    return main_win.child_window(auto_id=TREE_AUTO_ID, control_type="Tree")
+def _visible_tree(main_win):
+    """보이는 모델 탐색기 트리를 반환한다.
+
+    프로젝트를 여러 개 열면 이전 프로젝트의 트리가 숨겨진 채 UIA에 남아 있을 수 있어
+    auto_id가 같은 트리 중 화면에 보이는 것을 고른다.
+    """
+    try:
+        trees = [t for t in main_win.descendants(control_type="Tree")
+                 if t.element_info.automation_id == TREE_AUTO_ID]
+    except Exception:
+        return None
+    for t in trees:
+        try:
+            if t.is_visible():
+                return t
+        except Exception:
+            continue
+    return None
 
 
 def _tree_visible(main_win):
-    tree = _tree(main_win)
-    try:
-        return tree.exists(timeout=0.5) and tree.is_visible()
-    except Exception:
-        return False
+    return _visible_tree(main_win) is not None
+
+
+_state = {"sidebar_opened": False}
 
 
 def open_model_explorer(main_win):
-    """모델 탐색 패널을 연다. 이미 보이면 아무것도 하지 않는다.
+    """모델 탐색 패널을 연다. 이미 보이면 아무것도 하지 않고 False를 반환한다.
 
-    사이드바 항목은 클릭할 때마다 열림/닫힘이 토글되고, 패널이 숨겨져도
+    사이드바 항목과 열기 버튼은 클릭할 때마다 열림/닫힘이 토글되고, 패널이 숨겨져도
     트리 요소는 UIA에 남아 있으므로 exists가 아닌 is_visible로 판단한다.
+    여기서 연 것은 close_model_explorer에서 원래대로 되돌린다.
     """
     if _tree_visible(main_win):
         return False
 
+    _state["sidebar_opened"] = False
     menu_item = main_win.child_window(title=EXPLORER_MENU, control_type="ListItem")
-    if not menu_item.exists(timeout=1):
+    try:
+        menu_visible = menu_item.exists(timeout=1) and menu_item.is_visible()
+    except Exception:
+        menu_visible = False
+    if not menu_visible:
+        print("Model explorer: opening sidebar")
         open_sidebar_panel(main_win)
+        _state["sidebar_opened"] = True
 
     for _ in range(2):
         click_sidebar_item(main_win, EXPLORER_MENU)
@@ -53,9 +76,17 @@ def open_model_explorer(main_win):
 
 
 def close_model_explorer(main_win):
+    """open_model_explorer가 바꾼 사이드바 상태를 원래대로 되돌린다."""
     if _tree_visible(main_win):
         click_sidebar_item(main_win, EXPLORER_MENU)
         time.sleep(0.5)
+    if _state["sidebar_opened"]:
+        print("Model explorer: closing sidebar")
+        try:
+            open_sidebar_panel(main_win)  # 열기 버튼은 토글
+        except Exception as e:
+            print(f"Model explorer: sidebar restore failed: {e}")
+        _state["sidebar_opened"] = False
 
 
 def _item_text(item):
@@ -64,7 +95,10 @@ def _item_text(item):
 
 
 def _read_items(main_win):
-    items = _tree(main_win).descendants(control_type="TreeItem")
+    tree = _visible_tree(main_win)
+    if tree is None:
+        raise RuntimeError("Model explorer tree is not visible.")
+    items = tree.descendants(control_type="TreeItem")
     result = []
     for item in items:
         name = _item_text(item)

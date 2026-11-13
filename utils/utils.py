@@ -350,6 +350,7 @@ def navigate_setting_sidebar(main_win, items=None):
     if items is None:
         items = ["전체", "프로젝트", "DBMS 연결", "모델 디자이너", "리포지토리", "테마"]
 
+    bring_to_front(main_win)
     open_sidebar_panel(main_win)
     click_sidebar_item(main_win, "작업 기록")
     click_sidebar_item(main_win, "설정")
@@ -392,6 +393,7 @@ def random_tab_name(prefix="Tab"):
 
 
 def add_new_tab_and_confirm(main_win):
+    bring_to_front(main_win)
     print("1. Click Add Tab button")
     main_win.child_window(auto_id="AddButton", control_type="Button").click_input()
     time.sleep(0.3)
@@ -403,18 +405,28 @@ def add_new_tab_and_confirm(main_win):
     text_edit = None
 
     for _ in range(10):
+        # 앱 프로세스의 창(팝업)과 메인 창 내부만 검색한다.
+        # desktop.window(found_index=0)은 IDE 등 다른 프로그램 창을 잡을 수 있다.
         try:
-            popup_candidate = desktop.window(control_type="Window", found_index=0)
-            ok_btn_candidate = popup_candidate.child_window(title="확인", control_type="Button")
-            text_edit_candidate = popup_candidate.child_window(auto_id="inputTextBox", control_type="Edit")
-            if ok_btn_candidate.exists() and text_edit_candidate.exists():
-                popup = popup_candidate
-                ok_btn = ok_btn_candidate
-                text_edit = text_edit_candidate
-                print("Popup detected.")
-                break
+            # child_window는 WindowSpecification에만 있으므로 handle로 다시 감싼다.
+            candidates = [desktop.window(handle=w.handle)
+                          for w in desktop.windows(process=main_win.process_id())] + [main_win]
         except Exception:
-            pass
+            candidates = []
+        for popup_candidate in candidates:
+            try:
+                ok_btn_candidate = popup_candidate.child_window(title="확인", control_type="Button")
+                text_edit_candidate = popup_candidate.child_window(auto_id="inputTextBox", control_type="Edit")
+                if ok_btn_candidate.exists(timeout=0) and text_edit_candidate.exists(timeout=0):
+                    popup = popup_candidate
+                    ok_btn = ok_btn_candidate
+                    text_edit = text_edit_candidate
+                    print("Popup detected.")
+                    break
+            except Exception:
+                continue
+        if popup is not None:
+            break
         time.sleep(0.5)
 
     if popup is None or ok_btn is None or text_edit is None:
