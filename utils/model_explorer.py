@@ -57,7 +57,7 @@ def describe_trees(main_win):
         try:
             visible = t.is_visible()
             rect = t.rectangle()
-            names = [_item_text(it) for it in t.descendants(control_type="TreeItem")]
+            names = [_item_text(it) for it in _sorted_by_position(t.descendants(control_type="TreeItem"))]
         except Exception as e:
             lines.append(f"tree[{i}] error: {e}")
             continue
@@ -121,11 +121,26 @@ def _item_text(item):
     return texts[0].strip() if texts else ""
 
 
+def _sorted_by_position(items):
+    """TreeItem을 화면상 위→아래 순서로 정렬한다.
+
+    UIA가 돌려주는 순서는 화면 표시 순서와 다를 수 있다(가상화/컨테이너 재사용).
+    예: ['엔터티', 'En1', '기타', 'REL(...)', 'SAMPLE_ENTITY', '관계']
+    그룹 라벨 기준으로 하위 항목을 나누려면 화면 순서가 필요하므로 y좌표로 정렬한다.
+    """
+    def top(item):
+        try:
+            return item.rectangle().top
+        except Exception:
+            return 0
+    return sorted(items, key=top)
+
+
 def _read_items(main_win):
     tree = _visible_tree(main_win)
     if tree is None:
         raise RuntimeError("Model explorer tree is not visible.")
-    items = tree.descendants(control_type="TreeItem")
+    items = _sorted_by_position(tree.descendants(control_type="TreeItem"))
     result = []
     for item in items:
         name = _item_text(item)
