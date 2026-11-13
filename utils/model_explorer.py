@@ -57,7 +57,7 @@ def describe_trees(main_win):
         try:
             visible = t.is_visible()
             rect = t.rectangle()
-            names = [_item_text(it) for it in t.descendants(control_type="TreeItem")][:8]
+            names = [_item_text(it) for it in t.descendants(control_type="TreeItem")]
         except Exception as e:
             lines.append(f"tree[{i}] error: {e}")
             continue

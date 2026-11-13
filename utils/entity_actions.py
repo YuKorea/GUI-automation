@@ -259,6 +259,9 @@ def create_relationship_between_entities(main_win, logical_image_path=None,
 
 
 LEGACY_RELATIONSHIP_SCREEN_POS = (365, 270)  # 창 최대화 기준으로 쓰던 화면 절대좌표
+# 엔터티 생성 좌표(박스 왼쪽 위)의 중간점에서 실제 관계선까지의 보정값.
+# 최대화 상태에서 캔버스 기준 (365, 247)에 관계선이 있었다: 중간점 (325, 200) + (40, 47)
+RELATIONSHIP_LINE_OFFSET = (40, 47)
 
 
 def _label_on_screen(image_path, confidence=0.9):
@@ -277,8 +280,9 @@ def open_relationship_panel(main_win, canvas, start_coords=None, end_coords=None
     """
     targets = []
     if start_coords and end_coords:
-        mid = ((start_coords[0] + end_coords[0]) // 2, (start_coords[1] + end_coords[1]) // 2)
-        targets.append(("canvas midpoint", canvas_relative(canvas, *mid)))
+        mid = ((start_coords[0] + end_coords[0]) // 2 + RELATIONSHIP_LINE_OFFSET[0],
+               (start_coords[1] + end_coords[1]) // 2 + RELATIONSHIP_LINE_OFFSET[1])
+        targets.append(("canvas relative", canvas_relative(canvas, *mid)))
     targets.append(("legacy screen position", LEGACY_RELATIONSHIP_SCREEN_POS))
 
     for name, (x, y) in targets:

@@ -96,7 +96,7 @@ def test_add_entity_and_create_relationship(app_main_window, logical_image_path,
     entities = get_entity_names(app_main_window)
     assert len(entities) >= 2, f"Expected at least 2 entities: {entities}"
     relationships = get_relationship_names(app_main_window)
-    assert len(relationships) >= 1, "Relationship not found in model explorer."
+    assert len(relationships) >= 1, f"Relationship not found in model explorer.\n{describe_trees(app_main_window)}"
 
 
 # ===============================================================
