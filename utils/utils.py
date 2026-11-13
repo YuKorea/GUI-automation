@@ -25,8 +25,14 @@ def start_or_connect_app(exe_path: str):
 
 
 def _is_foreground(main_win):
+    """맨 앞 창이 메인 창이거나 같은 프로세스의 창(메뉴 팝업, 다이얼로그 등)이면 True."""
     import win32gui
-    return win32gui.GetForegroundWindow() == main_win.handle
+    import win32process
+    fg = win32gui.GetForegroundWindow()
+    if fg == main_win.handle:
+        return True
+    _, fg_pid = win32process.GetWindowThreadProcessId(fg)
+    return fg_pid == main_win.process_id()
 
 
 def bring_to_front(main_win, retries=3):
@@ -37,6 +43,14 @@ def bring_to_front(main_win, retries=3):
     Windows는 백그라운드 프로세스의 포커스 요청을 막을 수 있어,
     set_focus가 통하지 않으면 최소화 후 복원으로 강제한다.
     """
+    try:
+        # 이미 앱 창(메뉴 팝업 포함)이 앞에 있으면 건드리지 않는다.
+        # 여기서 최소화/복원하면 열려 있는 메뉴가 닫힌다.
+        if _is_foreground(main_win):
+            return True
+    except Exception:
+        pass
+
     for _ in range(retries):
         try:
             main_win.set_focus()
