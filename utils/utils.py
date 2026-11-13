@@ -1,4 +1,5 @@
 import os
+import re
 import psutil
 import random
 import string
@@ -23,6 +24,52 @@ def start_or_connect_app(exe_path: str):
     return app
 
 
+def _is_foreground(main_win):
+    """맨 앞 창이 메인 창이거나 같은 프로세스의 창(메뉴 팝업, 다이얼로그 등)이면 True."""
+    import win32gui
+    import win32process
+    fg = win32gui.GetForegroundWindow()
+    if fg == main_win.handle:
+        return True
+    _, fg_pid = win32process.GetWindowThreadProcessId(fg)
+    return fg_pid == main_win.process_id()
+
+
+def bring_to_front(main_win, retries=3):
+    """메인 창을 화면 맨 앞으로 가져온다.
+
+    클릭(click_input)과 이미지 인식(pyautogui)은 실제 화면 기준으로 동작하므로
+    다른 창(예: IDE)이 앞에 있으면 엉뚱한 곳을 클릭하거나 라벨을 찾지 못한다.
+    Windows는 백그라운드 프로세스의 포커스 요청을 막을 수 있어,
+    set_focus가 통하지 않으면 최소화 후 복원으로 강제한다.
+    """
+    try:
+        # 이미 앱 창(메뉴 팝업 포함)이 앞에 있으면 건드리지 않는다.
+        # 여기서 최소화/복원하면 열려 있는 메뉴가 닫힌다.
+        if _is_foreground(main_win):
+            return True
+    except Exception:
+        pass
+
+    for _ in range(retries):
+        try:
+            main_win.set_focus()
+            time.sleep(0.2)
+            if _is_foreground(main_win):
+                return True
+        except Exception:
+            pass
+        try:
+            main_win.minimize()
+            time.sleep(0.3)
+            main_win.restore()
+            time.sleep(0.5)
+        except Exception:
+            pass
+    print("Warning: main window could not be brought to front.")
+    return False
+
+
 def get_main_window(app):
     win = app.window(title_re=".*")
     win.wait("visible enabled ready", timeout=20)
@@ -34,12 +81,12 @@ def get_main_window(app):
 # ===============================================================
 
 def click_menu_item(main_win, title, invoke=False, timeout=10):
-    main_win.set_focus()
+    bring_to_front(main_win)
     try:
         menu_item = main_win.child_window(title=title, control_type="MenuItem")
         menu_item.wait("visible enabled ready", timeout=timeout)
     except Exception:
-        menu_item = main_win.child_window(title_re=f".*{title}.*", control_type="MenuItem")
+        menu_item = main_win.child_window(title_re=f".*{re.escape(title)}.*", control_type="MenuItem")
         menu_item.wait("visible enabled ready", timeout=timeout)
 
     if invoke:
@@ -50,7 +97,7 @@ def click_menu_item(main_win, title, invoke=False, timeout=10):
 
 
 def click_help_submenu(main_win, submenu_title):
-    main_win.set_focus()
+    bring_to_front(main_win)
     desktop = Desktop(backend="uia")
 
     try:
@@ -77,7 +124,7 @@ def click_help_submenu(main_win, submenu_title):
     time.sleep(2)
 
     try:
-        panel = main_win.child_window(title_re=f".*{submenu_title}.*", control_type="Pane")
+        panel = main_win.child_window(title_re=f".*{re.escape(submenu_title)}.*", control_type="Pane")
         if panel.exists(timeout=2):
             panel.click_input(coords=(10, 10))
             panel.wait_not("visible", timeout=5)
@@ -86,7 +133,7 @@ def click_help_submenu(main_win, submenu_title):
     except Exception:
         pass
 
-    main_win.set_focus()
+    bring_to_front(main_win)
     time.sleep(1)
 
 
@@ -131,14 +178,14 @@ def click_new_project(main_win):
 
 
 def click_open_project_menu(main_win):
-    main_win.set_focus()
+    bring_to_front(main_win)
     click_menu_item(main_win, "파일")
     click_menu_item(main_win, "열기", invoke=True)
     time.sleep(1.5)
 
 
 def click_open_project(main_win, filename):
-    main_win.set_focus()
+    bring_to_front(main_win)
     click_menu_item(main_win, "파일")
     click_menu_item(main_win, "열기...", invoke=True)
     time.sleep(2)
@@ -192,7 +239,7 @@ def generate_filename(extension="project"):
 
 
 def save_as_file(main_win, filename):
-    main_win.set_focus()
+    bring_to_front(main_win)
     click_menu_item(main_win, "파일")
     click_menu_item(main_win, "다른 이름으로 저장...", invoke=True)
     time.sleep(1)
@@ -280,7 +327,7 @@ def close_window_by_title_re(title_re_list, timeout=5):
 
 def open_print_dialog_and_close(main_win):
     try:
-        main_win.set_focus()
+        bring_to_front(main_win)
         click_menu_item(main_win, "파일")
         click_menu_item(main_win, "인쇄...", invoke=True)
         time.sleep(1)
@@ -303,6 +350,7 @@ def navigate_setting_sidebar(main_win, items=None):
     if items is None:
         items = ["전체", "프로젝트", "DBMS 연결", "모델 디자이너", "리포지토리", "테마"]
 
+    bring_to_front(main_win)
     open_sidebar_panel(main_win)
     click_sidebar_item(main_win, "작업 기록")
     click_sidebar_item(main_win, "설정")
@@ -345,6 +393,7 @@ def random_tab_name(prefix="Tab"):
 
 
 def add_new_tab_and_confirm(main_win):
+    bring_to_front(main_win)
     print("1. Click Add Tab button")
     main_win.child_window(auto_id="AddButton", control_type="Button").click_input()
     time.sleep(0.3)
@@ -356,18 +405,28 @@ def add_new_tab_and_confirm(main_win):
     text_edit = None
 
     for _ in range(10):
+        # 앱 프로세스의 창(팝업)과 메인 창 내부만 검색한다.
+        # desktop.window(found_index=0)은 IDE 등 다른 프로그램 창을 잡을 수 있다.
         try:
-            popup_candidate = desktop.window(control_type="Window", found_index=0)
-            ok_btn_candidate = popup_candidate.child_window(title="확인", control_type="Button")
-            text_edit_candidate = popup_candidate.child_window(auto_id="inputTextBox", control_type="Edit")
-            if ok_btn_candidate.exists() and text_edit_candidate.exists():
-                popup = popup_candidate
-                ok_btn = ok_btn_candidate
-                text_edit = text_edit_candidate
-                print("Popup detected.")
-                break
+            # child_window는 WindowSpecification에만 있으므로 handle로 다시 감싼다.
+            candidates = [desktop.window(handle=w.handle)
+                          for w in desktop.windows(process=main_win.process_id())] + [main_win]
         except Exception:
-            pass
+            candidates = []
+        for popup_candidate in candidates:
+            try:
+                ok_btn_candidate = popup_candidate.child_window(title="확인", control_type="Button")
+                text_edit_candidate = popup_candidate.child_window(auto_id="inputTextBox", control_type="Edit")
+                if ok_btn_candidate.exists(timeout=0) and text_edit_candidate.exists(timeout=0):
+                    popup = popup_candidate
+                    ok_btn = ok_btn_candidate
+                    text_edit = text_edit_candidate
+                    print("Popup detected.")
+                    break
+            except Exception:
+                continue
+        if popup is not None:
+            break
         time.sleep(0.5)
 
     if popup is None or ok_btn is None or text_edit is None:
