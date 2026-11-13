@@ -249,7 +249,8 @@ def create_relationship_between_entities(main_win, logical_image_path=None,
     time.sleep(1)
 
     bring_to_front(main_win)
-    open_relationship_panel(main_win, canvas)
+    open_relationship_panel(main_win, canvas, existing_coords, new_coords,
+                            label_image_path=logical_image_path)
 
     assert fill_field(logical_image_path, "REL_LOGICAL"), "Field input failed: label image not found"
     assert fill_field(physical_image_path, "REL_PHYSICAL"), "Field input failed: label image not found"
@@ -257,13 +258,39 @@ def create_relationship_between_entities(main_win, logical_image_path=None,
     print("Relationship input completed.")
 
 
-def open_relationship_panel(main_win, canvas, start_coords=None, end_coords=None):
-    click_x, click_y = 365, 270
-    pyautogui.moveTo(click_x, click_y)
-    time.sleep(0.2)
-    pyautogui.doubleClick()
-    time.sleep(0.8)
-    print("Relationship panel opened.")
+LEGACY_RELATIONSHIP_SCREEN_POS = (365, 270)  # 창 최대화 기준으로 쓰던 화면 절대좌표
+
+
+def _label_on_screen(image_path, confidence=0.9):
+    try:
+        return pyautogui.locateOnScreen(image_path, confidence=confidence, grayscale=True) is not None
+    except pyautogui.ImageNotFoundException:
+        return False
+
+
+def open_relationship_panel(main_win, canvas, start_coords=None, end_coords=None, label_image_path=None):
+    """관계선을 더블클릭해 관계 속성 패널을 연다.
+
+    관계선은 UIA로 잡히지 않으므로 두 엔터티의 중간점(캔버스 기준)을 더블클릭한다.
+    창 크기/위치가 달라도 동작하도록 캔버스 상대좌표를 쓰고,
+    label_image_path가 주어졌는데 패널 라벨이 안 보이면 기존 화면 절대좌표로 재시도한다.
+    """
+    targets = []
+    if start_coords and end_coords:
+        mid = ((start_coords[0] + end_coords[0]) // 2, (start_coords[1] + end_coords[1]) // 2)
+        targets.append(("canvas midpoint", canvas_relative(canvas, *mid)))
+    targets.append(("legacy screen position", LEGACY_RELATIONSHIP_SCREEN_POS))
+
+    for name, (x, y) in targets:
+        pyautogui.moveTo(x, y)
+        time.sleep(0.2)
+        pyautogui.doubleClick()
+        time.sleep(0.8)
+        if label_image_path is None or _label_on_screen(label_image_path):
+            print(f"Relationship panel opened ({name}: {x}, {y}).")
+            return True
+        print(f"Relationship panel not detected after clicking {name}: {x}, {y}")
+    return False
 
 
 def fill_entity_properties(logical_img, physical_img, description_img,
