@@ -18,24 +18,51 @@ GROUP_LABELS = ("엔터티", "관계", "기타")
 EXPAND_COLLAPSED = 0
 
 
-def _visible_tree(main_win):
-    """보이는 모델 탐색기 트리를 반환한다.
-
-    프로젝트를 여러 개 열면 이전 프로젝트의 트리가 숨겨진 채 UIA에 남아 있을 수 있어
-    auto_id가 같은 트리 중 화면에 보이는 것을 고른다.
-    """
+def _all_trees(main_win):
     try:
-        trees = [t for t in main_win.descendants(control_type="Tree")
-                 if t.element_info.automation_id == TREE_AUTO_ID]
+        return [t for t in main_win.descendants(control_type="Tree")
+                if t.element_info.automation_id == TREE_AUTO_ID]
     except Exception:
-        return None
-    for t in trees:
+        return []
+
+
+def _screen_area(tree):
+    try:
+        if not tree.is_visible():
+            return 0
+        r = tree.rectangle()
+        return max(r.width(), 0) * max(r.height(), 0)
+    except Exception:
+        return 0
+
+
+def _visible_tree(main_win):
+    """현재 화면에 실제로 보이는 모델 탐색기 트리를 반환한다.
+
+    프로젝트를 탭으로 여러 개 열면 다른 탭의 트리가 UIA에 남아 있고
+    is_visible도 True일 수 있다. 화면상 크기가 있는 트리 중
+    가장 나중(최근 탭)의 것을 고른다.
+    """
+    best = None
+    for t in _all_trees(main_win):
+        if _screen_area(t) > 0:
+            best = t
+    return best
+
+
+def describe_trees(main_win):
+    """디버그용: 모든 탐색기 트리의 상태와 앞부분 항목을 문자열로 반환한다."""
+    lines = []
+    for i, t in enumerate(_all_trees(main_win)):
         try:
-            if t.is_visible():
-                return t
-        except Exception:
+            visible = t.is_visible()
+            rect = t.rectangle()
+            names = [_item_text(it) for it in t.descendants(control_type="TreeItem")][:8]
+        except Exception as e:
+            lines.append(f"tree[{i}] error: {e}")
             continue
-    return None
+        lines.append(f"tree[{i}] visible={visible} rect={rect} items={names}")
+    return "\n".join(lines) or "no explorer tree found"
 
 
 def _tree_visible(main_win):
