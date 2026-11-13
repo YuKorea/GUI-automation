@@ -82,6 +82,7 @@ def _read_items(main_win):
 
 def get_group_items(main_win, group, keep_open=False):
     """모델 탐색기에서 그룹('엔터티'/'관계'/'기타')의 하위 항목 이름 목록을 반환한다.
+    프로젝트 내 모든 모델의 항목이 포함된다.
 
     keep_open=False면 원래 패널이 닫혀 있었을 때 다시 닫아서
     캔버스 좌표 기반 테스트에 영향을 주지 않도록 한다.
@@ -92,22 +93,22 @@ def get_group_items(main_win, group, keep_open=False):
     opened = open_model_explorer(main_win)
     try:
         names = None
-        for _ in range(len(GROUP_LABELS) + 1):
+        for _ in range(20):  # 접힌 그룹을 하나씩 펼치며 다시 읽는다
             names = _read_items(main_win)
             if names is not None:
                 break
         if names is None:
             raise RuntimeError("Model explorer items could not be read.")
 
-        if group not in names:
-            return []
-        start = names.index(group) + 1
-        end = len(names)
-        for i in range(start, len(names)):
-            if names[i] in GROUP_LABELS:
-                end = i
-                break
-        return names[start:end]
+        # 프로젝트에 모델이 여러 개면 같은 그룹 라벨이 여러 번 나오므로 모두 합친다.
+        result = []
+        current = None
+        for name in names:
+            if name in GROUP_LABELS:
+                current = name
+            elif current == group:
+                result.append(name)
+        return result
     finally:
         if opened and not keep_open:
             close_model_explorer(main_win)

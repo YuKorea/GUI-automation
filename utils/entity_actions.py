@@ -3,12 +3,28 @@ import pyautogui
 import time
 from utils.utils import click_menu_item, click_new_project
 
-ASSET_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "asset")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ASSET_DIR = os.path.join(BASE_DIR, "asset")
+DEBUG_DIR = os.path.join(BASE_DIR, "debug_screenshots")
 
 
 # ===============================================================
 # 0. 공통 유틸리티 (Utilities)
 # ===============================================================
+
+def save_failure_screenshot(image_path):
+    """이미지 인식 실패 시 현재 화면을 저장하고 경로를 반환한다."""
+    try:
+        os.makedirs(DEBUG_DIR, exist_ok=True)
+        label = os.path.splitext(os.path.basename(image_path))[0]
+        path = os.path.join(DEBUG_DIR, f"{time.strftime('%Y%m%d_%H%M%S')}_{label}.png")
+        pyautogui.screenshot(path)
+        print(f"Screenshot saved: {path}")
+        return path
+    except Exception as e:
+        print(f"Screenshot failed: {e}")
+        return None
+
 
 def canvas_relative(canvas, offset_x, offset_y):
     rect = canvas.rectangle()
@@ -29,6 +45,7 @@ def click_and_write(image_path, text, delay=0.3, confidence=0.85):
         loc = None
     if loc is None:
         print(f"Image not found: {image_path}")
+        save_failure_screenshot(image_path)
         return False
     x, y = loc
     pyautogui.click(x, y)
@@ -104,6 +121,7 @@ def fill_field(panel_image_path, text):
         location = None
     if location is None:
         print(f"Label image not found: {panel_image_path}")
+        save_failure_screenshot(panel_image_path)
         return False
 
     input_x = location.left + location.width - 10

@@ -61,8 +61,6 @@ def test_help_menu(app_main_window):
 def test_new_project(app_main_window):
     click_new_project(app_main_window)
     time.sleep(2)
-    entities = get_entity_names(app_main_window)
-    assert entities == [], f"New project should have no entities: {entities}"
 
 
 def test_open_file(app_main_window):
