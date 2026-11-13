@@ -1,5 +1,6 @@
 import time
 from utils import entity_actions
+from utils.model_explorer import get_entity_names, get_relationship_names, has_entity
 from utils.utils import (
     click_menu_item,
     open_project_file,
@@ -60,6 +61,8 @@ def test_help_menu(app_main_window):
 def test_new_project(app_main_window):
     click_new_project(app_main_window)
     time.sleep(2)
+    entities = get_entity_names(app_main_window)
+    assert entities == [], f"New project should have no entities: {entities}"
 
 
 def test_open_file(app_main_window):
@@ -84,10 +87,16 @@ def test_entity_creation_flow(app_main_window, logical_image_path, physical_imag
     entity_actions.entity_creation_flow(
         app_main_window, logical_image_path, physical_image_path, description_image_path
     )
+    assert has_entity(app_main_window, "SAMPLE_ENTITY", "TB_SAMPLE"), \
+        f"Entity not found in model explorer: {get_entity_names(app_main_window)}"
 
 
 def test_add_entity_and_create_relationship(app_main_window):
     entity_actions.create_relationship_between_entities(app_main_window)
+    entities = get_entity_names(app_main_window)
+    assert len(entities) >= 2, f"Expected at least 2 entities: {entities}"
+    relationships = get_relationship_names(app_main_window)
+    assert len(relationships) >= 1, "Relationship not found in model explorer."
 
 
 # ===============================================================
