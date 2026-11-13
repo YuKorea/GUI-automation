@@ -1,4 +1,5 @@
 import os
+import re
 import psutil
 import random
 import string
@@ -39,7 +40,7 @@ def click_menu_item(main_win, title, invoke=False, timeout=10):
         menu_item = main_win.child_window(title=title, control_type="MenuItem")
         menu_item.wait("visible enabled ready", timeout=timeout)
     except Exception:
-        menu_item = main_win.child_window(title_re=f".*{title}.*", control_type="MenuItem")
+        menu_item = main_win.child_window(title_re=f".*{re.escape(title)}.*", control_type="MenuItem")
         menu_item.wait("visible enabled ready", timeout=timeout)
 
     if invoke:
@@ -77,7 +78,7 @@ def click_help_submenu(main_win, submenu_title):
     time.sleep(2)
 
     try:
-        panel = main_win.child_window(title_re=f".*{submenu_title}.*", control_type="Pane")
+        panel = main_win.child_window(title_re=f".*{re.escape(submenu_title)}.*", control_type="Pane")
         if panel.exists(timeout=2):
             panel.click_input(coords=(10, 10))
             panel.wait_not("visible", timeout=5)

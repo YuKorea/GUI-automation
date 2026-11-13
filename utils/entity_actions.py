@@ -1,6 +1,9 @@
+import os
 import pyautogui
 import time
 from utils.utils import click_menu_item, click_new_project
+
+ASSET_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "asset")
 
 
 # ===============================================================
@@ -15,12 +18,15 @@ def canvas_relative(canvas, offset_x, offset_y):
 
 
 def click_and_write(image_path, text, delay=0.3, confidence=0.85):
-    loc = pyautogui.locateCenterOnScreen(
-        image=image_path,
-        region=None,
-        grayscale=False,
-        confidence=confidence
-    )
+    try:
+        loc = pyautogui.locateCenterOnScreen(
+            image=image_path,
+            region=None,
+            grayscale=False,
+            confidence=confidence
+        )
+    except pyautogui.ImageNotFoundException:
+        loc = None
     if loc is None:
         print(f"Image not found: {image_path}")
         return False
@@ -92,7 +98,10 @@ def open_entity_panel(main_win, canvas, coords):
 
 
 def fill_field(panel_image_path, text):
-    location = pyautogui.locateOnScreen(panel_image_path, confidence=0.9, grayscale=True)
+    try:
+        location = pyautogui.locateOnScreen(panel_image_path, confidence=0.9, grayscale=True)
+    except pyautogui.ImageNotFoundException:
+        location = None
     if location is None:
         print(f"Label image not found: {panel_image_path}")
         return False
@@ -171,9 +180,9 @@ def entity_creation_flow(main_win, logical_image_path, physical_image_path, desc
     open_entity_panel(main_win, canvas, coords)
     time.sleep(1)
 
-    fill_logical_name(logical_image_path)
-    fill_physical_name(physical_image_path)
-    fill_description(description_image_path)
+    assert fill_logical_name(logical_image_path), "Field input failed: label image not found"
+    assert fill_physical_name(physical_image_path), "Field input failed: label image not found"
+    assert fill_description(description_image_path), "Field input failed: label image not found"
 
     attr_start_offset = (150, 120)
     attr_x, attr_y = canvas_relative(canvas, *attr_start_offset)
@@ -217,9 +226,9 @@ def create_relationship_between_entities(main_win):
 
     open_relationship_panel(main_win, canvas)
 
-    fill_field("asset/logical_label.png", "REL_LOGICAL")
-    fill_field("asset/physical_label.png", "REL_PHYSICAL")
-    fill_field("asset/description_label.png", "Temporary relationship for automated testing.")
+    assert fill_field(os.path.join(ASSET_DIR, "logical_label.png"), "REL_LOGICAL"), "Field input failed: label image not found"
+    assert fill_field(os.path.join(ASSET_DIR, "physical_label.png"), "REL_PHYSICAL"), "Field input failed: label image not found"
+    assert fill_field(os.path.join(ASSET_DIR, "description_label.png"), "Temporary relationship for automated testing."), "Field input failed: label image not found"
     print("Relationship input completed.")
 
 
