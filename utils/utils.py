@@ -24,6 +24,38 @@ def start_or_connect_app(exe_path: str):
     return app
 
 
+def _is_foreground(main_win):
+    import win32gui
+    return win32gui.GetForegroundWindow() == main_win.handle
+
+
+def bring_to_front(main_win, retries=3):
+    """메인 창을 화면 맨 앞으로 가져온다.
+
+    클릭(click_input)과 이미지 인식(pyautogui)은 실제 화면 기준으로 동작하므로
+    다른 창(예: IDE)이 앞에 있으면 엉뚱한 곳을 클릭하거나 라벨을 찾지 못한다.
+    Windows는 백그라운드 프로세스의 포커스 요청을 막을 수 있어,
+    set_focus가 통하지 않으면 최소화 후 복원으로 강제한다.
+    """
+    for _ in range(retries):
+        try:
+            main_win.set_focus()
+            time.sleep(0.2)
+            if _is_foreground(main_win):
+                return True
+        except Exception:
+            pass
+        try:
+            main_win.minimize()
+            time.sleep(0.3)
+            main_win.restore()
+            time.sleep(0.5)
+        except Exception:
+            pass
+    print("Warning: main window could not be brought to front.")
+    return False
+
+
 def get_main_window(app):
     win = app.window(title_re=".*")
     win.wait("visible enabled ready", timeout=20)
@@ -35,7 +67,7 @@ def get_main_window(app):
 # ===============================================================
 
 def click_menu_item(main_win, title, invoke=False, timeout=10):
-    main_win.set_focus()
+    bring_to_front(main_win)
     try:
         menu_item = main_win.child_window(title=title, control_type="MenuItem")
         menu_item.wait("visible enabled ready", timeout=timeout)
@@ -51,7 +83,7 @@ def click_menu_item(main_win, title, invoke=False, timeout=10):
 
 
 def click_help_submenu(main_win, submenu_title):
-    main_win.set_focus()
+    bring_to_front(main_win)
     desktop = Desktop(backend="uia")
 
     try:
@@ -87,7 +119,7 @@ def click_help_submenu(main_win, submenu_title):
     except Exception:
         pass
 
-    main_win.set_focus()
+    bring_to_front(main_win)
     time.sleep(1)
 
 
@@ -132,14 +164,14 @@ def click_new_project(main_win):
 
 
 def click_open_project_menu(main_win):
-    main_win.set_focus()
+    bring_to_front(main_win)
     click_menu_item(main_win, "파일")
     click_menu_item(main_win, "열기", invoke=True)
     time.sleep(1.5)
 
 
 def click_open_project(main_win, filename):
-    main_win.set_focus()
+    bring_to_front(main_win)
     click_menu_item(main_win, "파일")
     click_menu_item(main_win, "열기...", invoke=True)
     time.sleep(2)
@@ -193,7 +225,7 @@ def generate_filename(extension="project"):
 
 
 def save_as_file(main_win, filename):
-    main_win.set_focus()
+    bring_to_front(main_win)
     click_menu_item(main_win, "파일")
     click_menu_item(main_win, "다른 이름으로 저장...", invoke=True)
     time.sleep(1)
@@ -281,7 +313,7 @@ def close_window_by_title_re(title_re_list, timeout=5):
 
 def open_print_dialog_and_close(main_win):
     try:
-        main_win.set_focus()
+        bring_to_front(main_win)
         click_menu_item(main_win, "파일")
         click_menu_item(main_win, "인쇄...", invoke=True)
         time.sleep(1)

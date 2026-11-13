@@ -1,7 +1,7 @@
 import os
 import pyautogui
 import time
-from utils.utils import click_menu_item, click_new_project
+from utils.utils import click_menu_item, click_new_project, bring_to_front
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSET_DIR = os.path.join(BASE_DIR, "asset")
@@ -108,6 +108,7 @@ def create_entity(main_win, coords):
 # ===============================================================
 
 def open_entity_panel(main_win, canvas, coords):
+    bring_to_front(main_win)
     canvas.set_focus()
     canvas.double_click_input(coords=coords)
     time.sleep(0.5)
@@ -247,6 +248,7 @@ def create_relationship_between_entities(main_win, logical_image_path=None,
     canvas.click_input(coords=new_coords)
     time.sleep(1)
 
+    bring_to_front(main_win)
     open_relationship_panel(main_win, canvas)
 
     assert fill_field(logical_image_path, "REL_LOGICAL"), "Field input failed: label image not found"
