@@ -13,7 +13,10 @@ DEBUG_DIR = os.path.join(BASE_DIR, "debug_screenshots")
 # ===============================================================
 
 def save_failure_screenshot(image_path):
-    """이미지 인식 실패 시 현재 화면을 저장하고 경로를 반환한다."""
+    """현재 화면을 debug_screenshots/에 저장하고 경로를 반환한다.
+
+    image_path는 파일명에 붙일 라벨로 쓰인다(이미지 경로 또는 임의 문자열).
+    """
     try:
         os.makedirs(DEBUG_DIR, exist_ok=True)
         label = os.path.splitext(os.path.basename(image_path))[0]
