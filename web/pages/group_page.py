@@ -30,6 +30,11 @@ class GroupPage(AdminListPage):
                 return keyword
             except Exception:
                 print(f"Dropdown: '{keyword}' not found, selecting the first item")
+        else:
+            # 처음부터 빈칸이면 목록 창이 열리지 않는 경우가 있다.
+            # 글자를 하나 입력해 목록 창을 연 뒤 아래에서 비우면 전체 목록이 나온다.
+            input_locator.fill("a")
+            self.page.wait_for_timeout(300)
         # 목록 창이 열려 있으면 투명 덮개(mud-overlay)가 입력칸 클릭을 막으므로
         # 클릭 대신 입력을 비우고 키보드로 목록을 연다.
         input_locator.fill("")
@@ -41,7 +46,7 @@ class GroupPage(AdminListPage):
         ):
             open_list()
             try:
-                first.wait_for(state="visible", timeout=2_000)
+                first.wait_for(state="visible", timeout=3_000)
                 break
             except Exception:
                 continue
