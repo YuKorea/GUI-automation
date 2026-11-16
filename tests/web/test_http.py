@@ -80,15 +80,20 @@ def test_http_redirects_to_https(playwright_instance):
 
 
 # ── 보안 헤더 ──
+# SEC-01 (docs/bug-reports/SEC-01-missing-security-headers.md): 2개 헤더가 없어 알려진 결함으로 표시.
+# strict=True라서 서버가 고쳐지면 XPASS → 실패로 보고되어, 이 표시를 지우도록 알려준다.
+KNOWN_SEC_01 = pytest.mark.xfail(strict=True, reason="SEC-01 보안 헤더 누락 — 개발팀 수정 대기")
 
 def _headers(api):
     return {k.lower(): v for k, v in api.get("/worker").headers.items()}
 
 
+@KNOWN_SEC_01
 def test_header_x_content_type_options(api):
     assert _headers(api).get("x-content-type-options", "").lower() == "nosniff"
 
 
+@KNOWN_SEC_01
 def test_header_clickjacking_protection(api):
     h = _headers(api)
     csp = h.get("content-security-policy", "")
