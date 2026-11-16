@@ -110,6 +110,8 @@ gui-automation/
 
 검색 "없음" 테스트는 결과가 0건인지만 보지 않고, 원래 보이던 행이 실제로 사라지는지 확인합니다.
 
+테스트 설계 근거(위험 기반 우선순위, 입력값 분석, 자동화 선정 기준, 요구사항 질의)는 [`docs/test-design/worker-management.md`](docs/test-design/worker-management.md)에 정리했습니다.
+
 ---
 
 ## 설치 및 실행
