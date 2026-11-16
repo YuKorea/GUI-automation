@@ -26,8 +26,15 @@ STATIC = (".js", ".css", ".png", ".jpg", ".svg", ".woff", ".woff2", ".ttf", ".ic
 lines = []
 
 
+HOST = urlparse(BASE_URL).netloc
+
+
 def mask(url):
-    return url.replace(BASE_URL, "<BASE_URL>")
+    """http(s)·ws(s) 어느 쪽이든 서버 호스트 이름을 가린다."""
+    u = urlparse(url)
+    if u.netloc == HOST:
+        return url.replace(f"{u.scheme}://{HOST}", "<BASE_URL>", 1)
+    return url
 
 
 def on_response(resp):
