@@ -1,64 +1,47 @@
-platform win32 -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- C:\경로명\python.exe
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- <project>\.venv\Scripts\python.exe
 cachedir: .pytest_cache
-rootdir: -
+rootdir: <project>
+configfile: pytest.ini
 plugins: order-1.3.0
-collected 13 items
+collected 37 items
 
-tests/test_application.py::test_open_project 14:26:02 [INFO] application 실행 또는 연결 시도 중...
-14:26:06 [INFO] ✅ application 실행 및 메인 윈도우 확보 완료
-PASSED
-tests/test_application.py::test_view_menu PASSED
-tests/test_application.py::test_sidebar_navigation PASSED
-tests/test_application.py::test_new_project PASSED
-tests/test_application.py::test_open_file ✅ 'large.application' 파일 열기 완료
-PASSED
-tests/test_application.py::test_save_as_duplicate ✅ 동일 이름 경고 처리 후 랜덤 파일명 '6s8cfbzn.application' 저장 완료
-✅ '다른 이름으로 저장' 중 동일 이름 처리 테스트 완료, 최종 저장 파일명: 6s8cfbzn.application
-PASSED
-tests/test_application.py::test_print_dialog ✅ '메인 - 인쇄' 창 닫기 완료
-PASSED
-tests/test_application.py::test_entity_creation_flow ✅ 새 프로젝트 생성 완료
-캔버스 발견: uiawrapper.UIAWrapper - '', Pane | size(area)=1937280
-캔버스 발견: uiawrapper.UIAWrapper - '', Pane | size(area)=1937280
-✅ 엔터티 생성 성공
-엔터티 패널 열기 시도 완료
-🔍 레이블 이미지 찾는 중 → C:\asset\logical_name_label.png
-✅ 입력 완료: CUSTOMER_INFORMATION
-🔍 레이블 이미지 찾는 중 → C:\asset\physical_name_label.png
-✅ 입력 완료: TB_CUSTOMER_INFO
-🔍 레이블 이미지 찾는 중 → C:\asset\description_label.png
-✅ 입력 완료: This is a temporary entity used for automated testing of entity creation and field input.
-✅ 엔터티 attribute 입력 완료
-PASSED
-tests/test_application.py::test_add_entity_and_create_relationship 캔버스 발견: uiawrapper.UIAWrapper - '', Pane | size(area)=1937280
-캔버스 발견: uiawrapper.UIAWrapper - '', Pane | size(area)=1937280
-✅ 엔터티 생성 성공
-Clicking at application coordinates: (365, 270)
-✅ 관계선 속성 패널 열기 완료
-🔍 레이블 이미지 찾는 중 → asset/logical_name_label.png
-✅ 입력 완료: 123
-🔍 레이블 이미지 찾는 중 → asset/physical_name_label.png
-✅ 입력 완료: 456
-🔍 레이블 이미지 찾는 중 → asset/description_label.png
-✅ 입력 완료: Temporary test description for relationship
-✅ 관계선 정보 입력 완료
-PASSED
-tests/test_application.py::test_setting_sidebar_navigation ✅ '전체' 클릭 완료
-✅ '프로젝트' 클릭 완료
-✅ 'DBMS 연결' 클릭 완료
-✅ '모델 디자이너' 클릭 완료
-✅ '리포지토리' 클릭 완료
-✅ '테마' 클릭 완료
-PASSED
-tests/test_application.py::test_add_new_tab 1. '새 탭 추가' 클릭
-2. 팝업 탐색 중...
-   ✅ 팝업 감지 완료
-3. 이름 입력: Tab_yI8Sk
-4. '확인' 클릭 완료 ✅
-✅ 생성된 탭 이름: Tab_yI8Sk
-PASSED
-tests/test_application.py::test_edit_undo PASSED14:29:05 [INFO] 테스트 종료, application 종료 중...
-14:29:05 [INFO] application 종료 완료 ✅
+tests/test_app.py::test_open_project PASSED                              [  2%]
+tests/test_app.py::test_view_menu PASSED                                 [  5%]
+tests/test_app.py::test_sidebar_navigation PASSED                        [  8%]
+tests/test_app.py::test_help_menu PASSED                                 [ 10%]
+tests/test_app.py::test_new_project PASSED                               [ 13%]
+tests/test_app.py::test_open_file PASSED                                 [ 16%]
+tests/test_app.py::test_save_as_duplicate PASSED                         [ 18%]
+tests/test_app.py::test_print_dialog PASSED                              [ 21%]
+tests/test_app.py::test_entity_creation_flow PASSED                      [ 24%]
+tests/test_app.py::test_add_entity_and_create_relationship PASSED        [ 27%]
+tests/test_app.py::test_setting_sidebar_navigation PASSED                [ 29%]
+tests/test_app.py::test_add_new_tab PASSED                               [ 32%]
+tests/test_app.py::test_edit_undo PASSED                                 [ 35%]
+tests/web/test_commoncode_crud.py::test_create_popup_opens PASSED        [ 37%]
+tests/web/test_commoncode_crud.py::test_create_cancel PASSED             [ 40%]
+tests/web/test_commoncode_crud.py::test_create_success PASSED            [ 43%]
+tests/web/test_commoncode_crud.py::test_create_requires_code PASSED      [ 45%]
+tests/web/test_commoncode_crud.py::test_search_existing_keyword PASSED   [ 48%]
+tests/web/test_commoncode_crud.py::test_search_not_exist_keyword PASSED  [ 51%]
+tests/web/test_commoncode_crud.py::test_delete_code PASSED               [ 54%]
+tests/web/test_group_crud.py::test_create_popup_opens PASSED             [ 56%]
+tests/web/test_group_crud.py::test_create_cancel PASSED                  [ 59%]
+tests/web/test_group_crud.py::test_create_success PASSED                 [ 62%]
+tests/web/test_group_crud.py::test_create_requires_name PASSED           [ 64%]
+tests/web/test_group_crud.py::test_search_existing_keyword PASSED        [ 67%]
+tests/web/test_group_crud.py::test_search_not_exist_keyword PASSED       [ 70%]
+tests/web/test_group_crud.py::test_delete_group PASSED                   [ 72%]
+tests/web/test_worker_crud.py::test_create_popup_opens PASSED            [ 75%]
+tests/web/test_worker_crud.py::test_create_cancel PASSED                 [ 78%]
+tests/web/test_worker_crud.py::test_create_success PASSED                [ 81%]
+tests/web/test_worker_crud.py::test_create_requires_id PASSED            [ 83%]
+tests/web/test_worker_crud.py::test_search_existing_keyword PASSED       [ 86%]
+tests/web/test_worker_crud.py::test_search_not_exist_keyword PASSED      [ 89%]
+tests/web/test_worker_crud.py::test_search_reset PASSED                  [ 91%]
+tests/web/test_worker_crud.py::test_edit_popup_opens PASSED              [ 94%]
+tests/web/test_worker_crud.py::test_delete_worker PASSED                 [ 97%]
+tests/web/test_worker_crud.py::test_approval_status PASSED               [100%]
 
-
-================================================================================================= 13 passed in 183.66s (0:03:03) ==================================================================================================
+======================= 37 passed in 228.74s (0:03:48) ========================
