@@ -96,7 +96,6 @@ def test_add_entity_and_create_relationship(app_main_window, logical_image_path,
     entity_actions.create_relationship_between_entities(
         app_main_window, logical_image_path, physical_image_path, description_image_path
     )
-    entity_actions.save_failure_screenshot("after_relationship")
     entities = get_entity_names(app_main_window)
     relationships = get_relationship_names(app_main_window)
     detail = describe_trees(app_main_window)
