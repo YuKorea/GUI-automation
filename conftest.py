@@ -4,6 +4,13 @@ import os
 from pywinauto.timings import TimeoutError
 from utils.utils import start_or_connect_app, get_main_window
 
+# .env가 있으면 환경변수로 읽는다 (경로·계정 등은 코드에 쓰지 않는다)
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+except ImportError:
+    pass
+
 # ===============================================================
 # 실행 파일 경로 — 환경변수 또는 직접 수정
 # ===============================================================
