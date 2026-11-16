@@ -1,4 +1,5 @@
 import time
+import pytest
 from utils import entity_actions
 from utils.model_explorer import get_entity_names, get_relationship_names, has_entity, describe_trees
 from utils.utils import (
@@ -17,6 +18,8 @@ from utils.utils import (
     add_new_tab_and_confirm
 )
 from conftest import TARGET_FILE
+
+pytestmark = pytest.mark.desktop
 
 
 # ===============================================================
@@ -93,7 +96,6 @@ def test_add_entity_and_create_relationship(app_main_window, logical_image_path,
     entity_actions.create_relationship_between_entities(
         app_main_window, logical_image_path, physical_image_path, description_image_path
     )
-    entity_actions.save_failure_screenshot("after_relationship")
     entities = get_entity_names(app_main_window)
     relationships = get_relationship_names(app_main_window)
     detail = describe_trees(app_main_window)
