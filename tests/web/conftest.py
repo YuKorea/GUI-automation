@@ -41,15 +41,32 @@ def _require_env():
 
 
 @pytest.fixture(scope="session")
-def browser():
+def playwright_instance():
+    """브라우저 테스트와 HTTP 테스트가 같은 Playwright 인스턴스를 쓴다.
+
+    sync_playwright는 한 스레드에서 동시에 두 개를 띄울 수 없다.
+    """
     _require_env()
-    headed = os.environ.get("HEADED", "0") == "1"
     with sync_playwright() as p:
-        # 선택: 설치된 다른 Chromium을 쓰려면 BROWSER_EXECUTABLE_PATH 지정
-        executable = os.environ.get("BROWSER_EXECUTABLE_PATH") or None
-        browser = p.chromium.launch(headless=not headed, executable_path=executable)
-        yield browser
-        browser.close()
+        yield p
+
+
+@pytest.fixture(scope="session")
+def browser(playwright_instance):
+    headed = os.environ.get("HEADED", "0") == "1"
+    # 선택: 설치된 다른 Chromium을 쓰려면 BROWSER_EXECUTABLE_PATH 지정
+    executable = os.environ.get("BROWSER_EXECUTABLE_PATH") or None
+    browser = playwright_instance.chromium.launch(headless=not headed, executable_path=executable)
+    yield browser
+    browser.close()
+
+
+@pytest.fixture
+def api(playwright_instance):
+    """로그인하지 않은 HTTP 요청 컨텍스트 (Playwright APIRequestContext)."""
+    ctx = playwright_instance.request.new_context(base_url=test_data.BASE_URL)
+    yield ctx
+    ctx.dispose()
 
 
 @pytest.fixture

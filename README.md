@@ -100,15 +100,21 @@ gui-automation/
 | 12 | test_add_new_tab | 랜덤 이름 기반 새 탭 추가 |
 | 13 | test_edit_undo | 실행 취소(Undo) 동작 |
 
-### 관리자 웹 (24개, `-m web`)
+### 관리자 웹 (35개, `-m web`)
 
 | 화면 | 테스트 수 | 내용 |
 |------|------|------|
 | 작업자 관리 | 10 | 팝업 열기/취소, 생성, 아이디 필수값, 검색(존재/없음/초기화), 수정 팝업, 삭제, 승인상태 |
 | 그룹 관리 | 7 | 팝업 열기/취소, 생성, 그룹명 필수값, 검색(존재/없음), 삭제 |
 | 공통코드 관리 | 7 | 팝업 열기/취소, 생성, 코드 필수값, 검색(존재/없음), 삭제 |
+| HTTP·보안 | 11 | 페이지 응답 시간, Blazor 연결 엔드포인트, 없는 경로 처리, 로그인 없이 관리 화면 접근 차단(3개 화면), HTTPS 리다이렉트, 보안 헤더 3종 |
 
 검색 "없음" 테스트는 결과가 0건인지만 보지 않고, 원래 보이던 행이 실제로 사라지는지 확인합니다.
+
+관리자 웹은 Blazor Server 구조라 화면 동작이 REST API가 아닌 웹소켓으로 처리됩니다(`tools/capture_network.py`로 확인). 그래서 업무 API 대신 HTTP 계층에서 검증할 수 있는 항목을 Playwright `APIRequestContext`로 테스트합니다.
+보안 헤더 2종 누락은 이 테스트로 발견해 [`docs/bug-reports/SEC-01-missing-security-headers.md`](docs/bug-reports/SEC-01-missing-security-headers.md)로 보고했고, 수정 전까지 알려진 결함(`xfail`, strict)으로 관리합니다.
+
+테스트 설계 근거(위험 기반 우선순위, 입력값 분석, 자동화 선정 기준, 요구사항 질의)는 [`docs/test-design/worker-management.md`](docs/test-design/worker-management.md)에 정리했습니다.
 
 ---
 
@@ -230,6 +236,7 @@ Python-based test automation for a Windows desktop application and its admin web
 | Admin web — Worker | 10 | `pytest -m web` |
 | Admin web — Group | 7 | `pytest -m web` |
 | Admin web — Common Code | 7 | `pytest -m web` |
+| Admin web — HTTP & security | 11 | `pytest -m web` |
 
 ---
 
