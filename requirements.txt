@@ -13,3 +13,6 @@ numpy==2.2.6
 pywin32==311
 
 colorama==0.4.6
+
+playwright==1.49.1
+python-dotenv==1.0.1

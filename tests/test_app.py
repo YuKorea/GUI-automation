@@ -1,4 +1,5 @@
 import time
+import pytest
 from utils import entity_actions
 from utils.model_explorer import get_entity_names, get_relationship_names, has_entity, describe_trees
 from utils.utils import (
@@ -17,6 +18,8 @@ from utils.utils import (
     add_new_tab_and_confirm
 )
 from conftest import TARGET_FILE
+
+pytestmark = pytest.mark.desktop
 
 
 # ===============================================================

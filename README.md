@@ -118,6 +118,34 @@ pytest -v -s
 
 ---
 
+## 관리자 웹 테스트 (Playwright)
+
+리포지토리 관리자 웹 페이지 테스트를 같은 pytest 스위트에서 실행합니다.
+
+| 화면 | 테스트 수 | 파일 |
+|------|------|------|
+| 작업자 관리 | 10 | `tests/web/test_worker_crud.py` |
+| 그룹 관리 | 7 | `tests/web/test_group_crud.py` |
+| 공통코드 관리 | 7 | `tests/web/test_commoncode_crud.py` |
+
+각 테스트는 필요한 데이터를 직접 만들고 끝나면 삭제합니다(테스트 간 상태 공유 없음).
+
+| 항목 | 내용 |
+|------|------|
+| 위치 | `web/pages/` (페이지 객체), `tests/web/` (테스트) |
+| 설정 | `.env.example`을 `.env`로 복사해 `BASE_URL`, `ADMIN_ID`, `ADMIN_PW` 입력 (`.env`는 커밋 제외) |
+| 브라우저 설치 | `playwright install chromium` |
+| 실패 시 | `debug_screenshots/web/`에 화면 저장 |
+
+```bash
+pytest -m web       # 관리자 웹 테스트만
+pytest -m desktop   # 데스크톱 앱 테스트만
+```
+
+환경변수가 없으면 웹 테스트는 skip 됩니다.
+
+---
+
 ## 데모
 
 데모 영상은 `docs/demo/` 경로에 저장되어 있으며 보안 이슈 상 저장소에는 포함되지 않습니다.
